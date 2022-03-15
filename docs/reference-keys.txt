@@ -1,0 +1,14 @@
+climate-data
+historical
+national
+north
+central
+south
+temperature-and-precipitation-anomalies-in-malawi-from-1950-to-present-based-on-climatological-period-1981-2010
+temperature-anomaly
+precipitation-anomaly
+climate-projections---based-on-ssps
+mean-temperature-change-2021-2040-based-on-climatological-mean-1971-2000
+precipitation-change-2021-2040-based-on-climatologial-period-1971-2000
+mean-temperature-change-2041-2060-based-on-climatological-mean-1971-2000
+precipitation-change-2041-2060-based-on-climatologial-period-1971-2000

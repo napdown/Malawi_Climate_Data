@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Malawi Climate Data</title>
+  <meta name="description" content="Climate data for current/baseline and projection periods." />
+  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Malawi Climate Data" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Climate data for current/baseline and projection periods." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Malawi Climate Data" />
+  
+  <meta name="twitter:description" content="Climate data for current/baseline and projection periods." />
+  
+
+<meta name="author" content="The A Team" />
+
+
+<meta name="date" content="2022-03-14" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+
+
+<script src="libs/header-attrs-2.12/header-attrs.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.10.0/plotly.js"></script>
+<script src="libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.5.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.5.1/plotly-latest.min.js"></script>
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Malawi Climate data</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="#climate-data"><i class="fa fa-check"></i><b>1</b> Climate data<span></span></a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="#historical"><i class="fa fa-check"></i><b>1.1</b> Historical<span></span></a>
+<ul>
+<li class="chapter" data-level="1.1.1" data-path="index.html"><a href="#national"><i class="fa fa-check"></i><b>1.1.1</b> National<span></span></a></li>
+<li class="chapter" data-level="1.1.2" data-path="index.html"><a href="#north"><i class="fa fa-check"></i><b>1.1.2</b> North<span></span></a></li>
+<li class="chapter" data-level="1.1.3" data-path="index.html"><a href="#central"><i class="fa fa-check"></i><b>1.1.3</b> Central<span></span></a></li>
+<li class="chapter" data-level="1.1.4" data-path="index.html"><a href="#south"><i class="fa fa-check"></i><b>1.1.4</b> South<span></span></a></li>
+<li class="chapter" data-level="1.1.5" data-path="index.html"><a href="#temperature-and-precipitation-anomalies-in-malawi-from-1950-to-present-based-on-climatological-period-1981-2010"><i class="fa fa-check"></i><b>1.1.5</b> Temperature and Precipitation Anomalies in Malawi from 1950 to present (based on climatological period 1981-2010)<span></span></a></li>
+</ul></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="#climate-projections---based-on-ssps"><i class="fa fa-check"></i><b>1.2</b> Climate Projections - based on SSPs<span></span></a>
+<ul>
+<li class="chapter" data-level="1.2.1" data-path="index.html"><a href="#mean-temperature-change-2021-2040-based-on-climatological-mean-1971-2000"><i class="fa fa-check"></i><b>1.2.1</b> Mean Temperature change 2021-2040 based on climatological mean 1971-2000<span></span></a></li>
+<li class="chapter" data-level="1.2.2" data-path="index.html"><a href="#precipitation-change-2021-2040-based-on-climatologial-period-1971-2000"><i class="fa fa-check"></i><b>1.2.2</b> Precipitation change 2021-2040 based on climatologial period 1971-2000<span></span></a></li>
+<li class="chapter" data-level="1.2.3" data-path="index.html"><a href="#mean-temperature-change-2041-2060-based-on-climatological-mean-1971-2000"><i class="fa fa-check"></i><b>1.2.3</b> Mean Temperature change 2041-2060 based on climatological mean 1971-2000<span></span></a></li>
+<li class="chapter" data-level="1.2.4" data-path="index.html"><a href="#precipitation-change-2041-2060-based-on-climatologial-period-1971-2000"><i class="fa fa-check"></i><b>1.2.4</b> Precipitation change 2041-2060 based on climatologial period 1971-2000<span></span></a></li>
+</ul></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Malawi Climate Data</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">Malawi Climate Data</h1>
+<p class="author"><em>The A Team</em></p>
+<p class="date"><em>2022-03-14</em></p>
+</div>
+<div id="climate-data" class="section level1 hasAnchor" number="1">
+<h1><span class="header-section-number">Chapter 1</span> Climate data<a href="#climate-data" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="historical" class="section level2 hasAnchor" number="1.1">
+<h2><span class="header-section-number">1.1</span> Historical<a href="#historical" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="national" class="section level3 hasAnchor" number="1.1.1">
+<h3><span class="header-section-number">1.1.1</span> National<a href="#national" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="htmlwidget-275a8595b095804e7627" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-275a8595b095804e7627">{"x":{"visdat":{"2fcc55b150bc":["function () ","plotlyVisDat"]},"cur_data":"2fcc55b150bc","attrs":{"2fcc55b150bc":{"x":{},"y":{},"name":"Precipitation","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"},"2fcc55b150bc.1":{"x":{},"y":{},"name":"Temperature","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"lines","yaxis":"y2","inherit":true},"2fcc55b150bc.2":{"x":{},"y":{},"name":"","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"markers","color":"#D21919","yaxis":"y2","showlegend":false,"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"legend":{"orientation":"h","y":-0.1,"x":0.7},"yaxis":{"domain":[0,1],"automargin":true,"title":"Precipitation (mm)","showticklables":false,"showline":true,"standoff":20},"title":"Malawi <br /> (Mean 1991-2020)","yaxis2":{"overlaying":"y","side":"right","title":"Temperature (°C)","autotick":false,"dtick":5,"showline":true,"showgrid":false,"ticks":"outside","range":[18,30]},"xaxis":{"domain":[0,1],"automargin":true,"title":"Month","type":"category","categoryorder":"array","categoryarray":["07","08","09","10","11","12","01","02","03","04","05","06"]},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[238.956927373674,198.364618658001,189.490515853197,88.4544460787223,23.300855078701,7.83974371621879,6.95632490177567,3.43786330400751,2.58957268518642,15.9344447201261,62.1350437702277,196.889319408449],"name":"Precipitation","type":"bar","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["07","08","09","10","11","12","01","02","03","04","05","06"],"y":[18.6280345949352,20.1352995530153,22.7209405312171,24.8362396761902,25.6011114902985,24.7012824327518,23.9601713115333,23.8982054555518,23.7505986547878,22.639573043432,20.9971798635956,19.3249576633812],"name":"Temperature","type":"scatter","mode":"lines","yaxis":"y2","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"xaxis":"x","frame":null},{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[23.9601713115333,23.8982054555518,23.7505986547878,22.639573043432,20.9971798635956,19.3249576633812,18.6280345949352,20.1352995530153,22.7209405312171,24.8362396761902,25.6011114902985,24.7012824327518],"name":"","type":"scatter","mode":"markers","yaxis":"y2","showlegend":false,"marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>Figure 3 – Monthly Climatology of Mean-Temperature &amp; Precipitation 1991-2020 Malawi.</p>
+</div>
+<div id="north" class="section level3 hasAnchor" number="1.1.2">
+<h3><span class="header-section-number">1.1.2</span> North<a href="#north" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="htmlwidget-ea76cca6bd5d184431df" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ea76cca6bd5d184431df">{"x":{"visdat":{"2fcc3210336b":["function () ","plotlyVisDat"]},"cur_data":"2fcc3210336b","attrs":{"2fcc3210336b":{"x":{},"y":{},"name":"Precipitation","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"},"2fcc3210336b.1":{"x":{},"y":{},"name":"Temperature","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"lines","yaxis":"y2","inherit":true},"2fcc3210336b.2":{"x":{},"y":{},"name":"","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"markers","color":"#D21919","yaxis":"y2","showlegend":false,"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"legend":{"orientation":"h","y":-0.1,"x":0.7},"yaxis":{"domain":[0,1],"automargin":true,"title":"Precipitation (mm)","showticklables":false,"showline":true},"title":"Northern Malawi <br /> (Mean 1991-2020)","yaxis2":{"overlaying":"y","side":"right","title":"Temperature (°C)","autotick":false,"dtick":5,"showline":true,"ticks":"outside","showgrid":false,"range":[15,25]},"xaxis":{"domain":[0,1],"automargin":true,"title":"Month","type":"category","categoryorder":"array","categoryarray":["07","08","09","10","11","12","01","02","03","04","05","06"]},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[215.991432335263,180.428097752162,220.364289002191,131.032383210318,40.0638101419523,9.31190491687684,6.70428582234752,3.24904767246473,2.0200000337192,13.0328573780046,59.673334534963,191.696669642131],"name":"Precipitation","type":"bar","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["07","08","09","10","11","12","01","02","03","04","05","06"],"y":[17.4880956013997,19.092857556116,21.4480955941337,23.6033337275187,24.2466670263381,23.3280956177484,22.5747622535342,22.4057146344866,22.3814289819627,21.4828575679234,19.8590480214074,18.283809925261],"name":"Temperature","type":"scatter","mode":"lines","yaxis":"y2","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"xaxis":"x","frame":null},{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[22.5747622535342,22.4057146344866,22.3814289819627,21.4828575679234,19.8590480214074,18.283809925261,17.4880956013997,19.092857556116,21.4480955941337,23.6033337275187,24.2466670263381,23.3280956177484],"name":"","type":"scatter","mode":"markers","yaxis":"y2","showlegend":false,"marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="central" class="section level3 hasAnchor" number="1.1.3">
+<h3><span class="header-section-number">1.1.3</span> Central<a href="#central" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="htmlwidget-2f108024b3c6cae05d93" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2f108024b3c6cae05d93">{"x":{"visdat":{"2fcc19e71cc5":["function () ","plotlyVisDat"]},"cur_data":"2fcc19e71cc5","attrs":{"2fcc19e71cc5":{"x":{},"y":{},"name":"Precipitation","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"},"2fcc19e71cc5.1":{"x":{},"y":{},"name":"Temperature","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"lines","yaxis":"y2","inherit":true},"2fcc19e71cc5.2":{"x":{},"y":{},"name":"","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"markers","color":"#D21919","yaxis":"y2","showlegend":false,"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"legend":{"orientation":"h","y":-0.1,"x":0.7},"yaxis":{"domain":[0,1],"automargin":true,"title":"Precipitation (mm)","showticklables":false,"showline":true},"title":"Central Malawi <br /> (Mean 1991-2020)","yaxis2":{"overlaying":"y","side":"right","title":"Temperature (°C)","autotick":false,"dtick":10,"showline":true,"ticks":"outside","showgrid":false,"range":[15,30]},"xaxis":{"domain":[0,1],"automargin":true,"title":"Month","type":"category","categoryorder":"array","categoryarray":["07","08","09","10","11","12","01","02","03","04","05","06"]},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[259.311393653022,208.364725968573,181.025558344523,62.4702789783478,11.3233335307489,2.19500002540234,1.78611113909218,0.743888905106319,0.734722234722641,10.1702779794112,56.5075009120835,200.151669947306],"name":"Precipitation","type":"bar","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["07","08","09","10","11","12","01","02","03","04","05","06"],"y":[18.1544448799557,19.5233337084452,22.2708337042067,24.4313892205556,25.1933337211609,24.2497225973341,23.3744448290931,23.4488892449273,23.2969447983636,22.1700004259745,20.5838892459869,18.7625003920661],"name":"Temperature","type":"scatter","mode":"lines","yaxis":"y2","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"xaxis":"x","frame":null},{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[23.3744448290931,23.4488892449273,23.2969447983636,22.1700004259745,20.5838892459869,18.7625003920661,18.1544448799557,19.5233337084452,22.2708337042067,24.4313892205556,25.1933337211609,24.2497225973341],"name":"","type":"scatter","mode":"markers","yaxis":"y2","showlegend":false,"marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="south" class="section level3 hasAnchor" number="1.1.4">
+<h3><span class="header-section-number">1.1.4</span> South<a href="#south" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="htmlwidget-8aae07b622b0ae8fec7c" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8aae07b622b0ae8fec7c">{"x":{"visdat":{"2fcc44555770":["function () ","plotlyVisDat"]},"cur_data":"2fcc44555770","attrs":{"2fcc44555770":{"x":{},"y":{},"name":"Precipitation","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"},"2fcc44555770.1":{"x":{},"y":{},"name":"Temperature","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"lines","yaxis":"y2","inherit":true},"2fcc44555770.2":{"x":{},"y":{},"name":"","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"markers","color":"#D21919","yaxis":"y2","showlegend":false,"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"legend":{"orientation":"h","y":-0.1,"x":0.7},"yaxis":{"domain":[0,1],"automargin":true,"title":"Precipitation (mm)","showticklables":false,"showline":true},"title":"Southern Malawi <br /> (Mean 1991-2020)","yaxis2":{"overlaying":"y","side":"right","title":"Temperature (°C)","autotick":false,"dtick":10,"showline":true,"ticks":"outside","showgrid":false,"range":[19,30]},"xaxis":{"domain":[0,1],"automargin":true,"title":"Month","type":"category","categoryorder":"array","categoryarray":["07","08","09","10","11","12","01","02","03","04","05","06"]},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[241.589726853371,205.59333675305,159.796391730838,56.9463898551133,14.735278018088,11.7600001965546,12.9936113172521,6.45194454437329,5.36944451139619,26.4750004483594,74.7477789123853,200.164447530111],"name":"Precipitation","type":"bar","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["07","08","09","10","11","12","01","02","03","04","05","06"],"y":[19.2838892883725,20.992778189977,23.7197225835588,25.7594448248545,26.5772225856781,25.7108337243398,25.1488892290327,25.0525003327264,24.7908336904314,23.4241670396593,21.6508337020874,19.9958337201012],"name":"Temperature","type":"scatter","mode":"lines","yaxis":"y2","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"xaxis":"x","frame":null},{"x":["01","02","03","04","05","06","07","08","09","10","11","12"],"y":[25.1488892290327,25.0525003327264,24.7908336904314,23.4241670396593,21.6508337020874,19.9958337201012,19.2838892883725,20.992778189977,23.7197225835588,25.7594448248545,26.5772225856781,25.7108337243398],"name":"","type":"scatter","mode":"markers","yaxis":"y2","showlegend":false,"marker":{"color":"rgba(252,141,98,1)","line":{"color":"rgba(252,141,98,1)"}},"textfont":{"color":"rgba(252,141,98,1)"},"error_y":{"color":"rgba(252,141,98,1)"},"error_x":{"color":"rgba(252,141,98,1)"},"line":{"color":"rgba(252,141,98,1)"},"xaxis":"x","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="temperature-and-precipitation-anomalies-in-malawi-from-1950-to-present-based-on-climatological-period-1981-2010" class="section level3 hasAnchor" number="1.1.5">
+<h3><span class="header-section-number">1.1.5</span> Temperature and Precipitation Anomalies in Malawi from 1950 to present (based on climatological period 1981-2010)<a href="#temperature-and-precipitation-anomalies-in-malawi-from-1950-to-present-based-on-climatological-period-1981-2010" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div id="temperature-anomaly" class="section level4 hasAnchor" number="1.1.5.1">
+<h4><span class="header-section-number">1.1.5.1</span> Temperature Anomaly<a href="#temperature-anomaly" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div id="htmlwidget-2544ecf8943a080d8460" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2544ecf8943a080d8460">{"x":{"visdat":{"2fcc666313f":["function () ","plotlyVisDat"]},"cur_data":"2fcc666313f","attrs":{"2fcc666313f":{"x":{},"y":{},"showlegend":false,"color":{},"colors":["blue","red"],"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":{"text":"Malawi Temperature Anomaly  <br /> (Base=1981-2010)","font":{"size":20}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Anomaly (°C)","standoff":15,"showline":true},"xaxis":{"domain":[0,1],"automargin":true,"ticks":"inside","showline":true,"title":"YEAR"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1984,1985,1986,1988,1989,1990,1991,1993,1994,1996,1999,2000,2001,2008,2011,2012],"y":[-0.510000000000002,-0.309999999999999,-0.41,-0.41,-0.510000000000002,-0.809999999999999,-0.109999999999999,-0.109999999999999,-0.109999999999999,-0.41,-0.309999999999999,-0.710000000000001,-1.01,-0.809999999999999,-1.11,-0.309999999999999,-0.510000000000002,-0.609999999999999,-0.210000000000001,-0.210000000000001,-0.609999999999999,-0.510000000000002,-0.309999999999999,-1.01,-0.710000000000001,-0.710000000000001,-0.210000000000001,-0.510000000000002,-0.41,-0.510000000000002,-0.710000000000001,-0.510000000000002,-0.309999999999999,-0.609999999999999,-0.609999999999999,-0.210000000000001,-0.609999999999999,-0.0100000000000016,-0.309999999999999,-0.109999999999999,-0.0100000000000016,-0.0100000000000016,-0.210000000000001,-0.210000000000001,-0.0100000000000016,-0.0100000000000016,-0.0100000000000016,-0.0100000000000016],"showlegend":false,"type":"bar","name":"FALSE","marker":{"color":"rgba(0,0,255,1)","line":{"color":"rgba(0,0,255,1)"}},"textfont":{"color":"rgba(0,0,255,1)"},"error_y":{"color":"rgba(0,0,255,1)"},"error_x":{"color":"rgba(0,0,255,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1983,1987,1992,1995,1997,1998,2002,2003,2004,2005,2006,2007,2009,2010,2013,2014,2015,2016,2017,2018,2019],"y":[0.489999999999998,0.190000000000001,0.190000000000001,0.390000000000001,0.0899999999999999,0.390000000000001,0.190000000000001,0.289999999999999,0.0899999999999999,0.890000000000001,0.289999999999999,0.289999999999999,0.0899999999999999,0.59,0.0899999999999999,0.0899999999999999,0.390000000000001,0.390000000000001,0.190000000000001,0.190000000000001,0.390000000000001],"showlegend":false,"type":"bar","name":"TRUE","marker":{"color":"rgba(255,0,0,1)","line":{"color":"rgba(255,0,0,1)"}},"textfont":{"color":"rgba(255,0,0,1)"},"error_y":{"color":"rgba(255,0,0,1)"},"error_x":{"color":"rgba(255,0,0,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="precipitation-anomaly" class="section level4 hasAnchor" number="1.1.5.2">
+<h4><span class="header-section-number">1.1.5.2</span> Precipitation Anomaly<a href="#precipitation-anomaly" class="anchor-section" aria-label="Anchor link to header"></a></h4>
+<div id="htmlwidget-4d881380be83a8aebebd" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4d881380be83a8aebebd">{"x":{"visdat":{"2fcc4545a3b":["function () ","plotlyVisDat"]},"cur_data":"2fcc4545a3b","attrs":{"2fcc4545a3b":{"x":{},"y":{},"showlegend":false,"color":{},"colors":["red","blue"],"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":{"text":"Malawi Precipitation Anomaly<br />(Base: 1981-2010)","font":{"size":20}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Anomaly (mm)","standoff":15,"showline":true},"xaxis":{"domain":[0,1],"automargin":true,"ticks":"inside","showline":true,"title":"YEAR"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[1953,1954,1958,1959,1960,1964,1966,1973,1975,1981,1983,1987,1990,1992,1993,1994,1995,1998,2002,2003,2005,2006,2010,2012,2014,2015,2016],"y":[-13.4399999999998,-148.14,-131.14,-31.54,-20.1399999999999,-153.94,-71.9399999999999,-125.94,-56.9399999999998,-84.9399999999999,-115.64,-201.84,-212.04,-334.94,-74.6399999999999,-236.94,-113.04,-203.44,-49.9399999999998,-53.54,-160.44,-56.8399999999999,-111.04,-54.04,-60.24,-132.94,-78.2399999999999],"showlegend":false,"type":"bar","name":"FALSE","marker":{"color":"rgba(255,0,0,1)","line":{"color":"rgba(255,0,0,1)"}},"textfont":{"color":"rgba(255,0,0,1)"},"error_y":{"color":"rgba(255,0,0,1)"},"error_x":{"color":"rgba(255,0,0,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1951,1952,1955,1956,1957,1961,1962,1963,1965,1967,1968,1969,1970,1971,1972,1974,1976,1977,1978,1979,1980,1982,1984,1985,1986,1988,1989,1991,1996,1997,1999,2000,2001,2004,2007,2008,2009,2011,2013,2017,2018,2019],"y":[143.56,236.66,130.06,430.96,121.46,299.86,229.36,317.86,87.8600000000001,127.26,68.6600000000001,88.8600000000001,87.6600000000001,42.96,21.26,353.16,277.16,20.0600000000002,352.36,150.56,190.16,176.36,99.1600000000001,178.46,187.26,86.26,377.16,33.46,92.5600000000002,144.96,194.06,95.1600000000001,102.76,103.46,50.5600000000002,31.1600000000001,56.46,99.76,10.46,122.46,135.36,362.46],"showlegend":false,"type":"bar","name":"TRUE","marker":{"color":"rgba(0,0,255,1)","line":{"color":"rgba(0,0,255,1)"}},"textfont":{"color":"rgba(0,0,255,1)"},"error_y":{"color":"rgba(0,0,255,1)"},"error_x":{"color":"rgba(0,0,255,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="climate-projections---based-on-ssps" class="section level2 hasAnchor" number="1.2">
+<h2><span class="header-section-number">1.2</span> Climate Projections - based on SSPs<a href="#climate-projections---based-on-ssps" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="mean-temperature-change-2021-2040-based-on-climatological-mean-1971-2000" class="section level3 hasAnchor" number="1.2.1">
+<h3><span class="header-section-number">1.2.1</span> Mean Temperature change 2021-2040 based on climatological mean 1971-2000<a href="#mean-temperature-change-2021-2040-based-on-climatological-mean-1971-2000" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<pre><code>                                  National
+                                  
+                    Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre><code>                            Scenario: SSP2 - Middle of the Road
+                            </code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<pre><code>                            Scenario: SSP3 - Regional Rivalry</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre><code>                          Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<pre><code>                                  Northern Malawi
+                                    
+                         Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<pre><code>                        Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<pre><code>                        Scenario: SSP3 - Regional Rivalry
+                           </code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP5 - Fossil-fueled Development
+                         </code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre><code>                                    Central Malawi
+                                    
+                         Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP3 - Regional Rivalry</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<pre><code>                                    Southern Malawi
+                                    
+                         Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP3 - Regional Rivalry</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+</div>
+<div id="precipitation-change-2021-2040-based-on-climatologial-period-1971-2000" class="section level3 hasAnchor" number="1.2.2">
+<h3><span class="header-section-number">1.2.2</span> Precipitation change 2021-2040 based on climatologial period 1971-2000<a href="#precipitation-change-2021-2040-based-on-climatologial-period-1971-2000" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<pre><code>                                      National
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<pre><code>                                     Nothern Malawi
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-34-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-35-1.png" width="672" /></p>
+<pre><code>                                     Central Malawi
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-36-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-37-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-38-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-39-1.png" width="672" /></p>
+<pre><code>                                     Southern Malawi
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-40-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-41-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-42-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-43-1.png" width="672" /></p>
+</div>
+<div id="mean-temperature-change-2041-2060-based-on-climatological-mean-1971-2000" class="section level3 hasAnchor" number="1.2.3">
+<h3><span class="header-section-number">1.2.3</span> Mean Temperature change 2041-2060 based on climatological mean 1971-2000<a href="#mean-temperature-change-2041-2060-based-on-climatological-mean-1971-2000" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<pre><code>                               National
+                                  
+                    Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-44-1.png" width="672" /></p>
+<pre><code>                            Scenario: SSP2 - Middle of the Road
+                            </code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-45-1.png" width="672" /></p>
+<pre><code>                            Scenario: SSP3 - Regional Rivalry</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-46-1.png" width="672" /></p>
+<pre><code>                          Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-47-1.png" width="672" /></p>
+<pre><code>                                  Northern Malawi
+                                    
+                         Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-48-1.png" width="672" /></p>
+<pre><code>                        Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-49-1.png" width="672" /></p>
+<pre><code>                        Scenario: SSP3 - Regional Rivalry
+                           </code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-50-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP5 - Fossil-fueled Development
+                         </code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-51-1.png" width="672" /></p>
+<pre><code>                                    Central Malawi
+                                    
+                         Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-52-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-53-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP3 - Regional Rivalry</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-54-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-55-1.png" width="672" /></p>
+<pre><code>                                    Southern Malawi
+                                    
+                         Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-56-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-57-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP3 - Regional Rivalry</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-58-1.png" width="672" /></p>
+<pre><code>                      Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-59-1.png" width="672" /></p>
+</div>
+<div id="precipitation-change-2041-2060-based-on-climatologial-period-1971-2000" class="section level3 hasAnchor" number="1.2.4">
+<h3><span class="header-section-number">1.2.4</span> Precipitation change 2041-2060 based on climatologial period 1971-2000<a href="#precipitation-change-2041-2060-based-on-climatologial-period-1971-2000" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<pre><code>                                      National
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-61-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-62-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-63-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-64-1.png" width="672" /></p>
+<pre><code>                                     Nothern Malawi
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-65-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-66-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-67-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-68-1.png" width="672" /></p>
+<pre><code>                                     Central Malawi
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-69-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-70-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-71-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-72-1.png" width="672" /></p>
+<pre><code>                                     Southern Malawi
+                                    
+                        Scenario: SSP1 - Sustainability</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-73-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP2 - Middle of the Road</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-74-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP3 - Regional Rivarly</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-75-1.png" width="672" /></p>
+<pre><code>                       Scenario: SSP5 - Fossil-fueled Development</code></pre>
+<p><img src="_main_files/figure-html/unnamed-chunk-76-1.png" width="672" /></p>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/napdown/REPO/edit/BRANCH/index.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["_main.pdf", "_main.epub"],
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
