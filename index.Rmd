@@ -1,0 +1,1485 @@
+--- 
+title: "Malawi Climate Data"
+author: "The A Team"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [book.bib, packages.bib]
+# url: your book url like https://bookdown.org/yihui/bookdown
+# cover-image: path to the social sharing image like images/cover.jpg
+description: |
+ Climate data for current/baseline and projection periods.
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+---
+
+
+# Climate data 
+
+## Historical
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning=FALSE)
+``` 
+
+```{r,include=FALSE}
+library(remotes)
+library(raster)
+library(rasterVis)
+library(reshape)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(magrittr)
+library(R.utils)
+library(reticulate)
+library(sf)
+library(plotly)
+library(ggplot2)
+library(rgee)
+library(FAOSTAT)
+library(wbstats)
+library(tidyr)
+library(flextable)
+
+```
+
+```{r cru, cache=TRUE, include=FALSE}
+
+#prurl<- "https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.05/cruts.2103051243.v4.05/pre/cru_ts4.05.1901.2020.pre.dat.nc.gz"
+#download.file(prurl, destfile="cru_ts4.05.1901.2020.pre.dat.nc.gz")
+#gunzip("cru_ts4.05.1901.2020.pre.dat.nc.gz")
+#tmpurl<-"https://crudata.uea.ac.uk/cru/data/hrg/cru_ts_4.05/cruts.2103051243.v4.05/tmp/cru_ts4.05.1901.2020.tmp.dat.nc.gz"
+#download.file(tmpurl, destfile = "cru_ts4.05.1901.2020.tmp.dat.nc.gz")
+#gunzip("cru_ts4.05.1901.2020.tmp.dat.nc.gz")
+
+```
+
+```{r extent,include=FALSE}
+MWI0<-getData('GADM', country='MWI', level=0)
+MWI1<-getData('GADM', country='MWI', level=1)
+MWI2<-getData('GADM', country='MWI', level=2)
+#getData('ISO3')
+
+ee_Initialize()
+
+admin0<-ee$FeatureCollection("FAO/GAUL/2015/level2")
+malawi<- admin0$filter(ee$Filter$eq('ADM0_NAME', 'Malawi'))
+malawisf<-ee_as_sf(malawi)
+
+
+mwi_regions<-split(malawisf, malawisf$ADM1_NAME)
+area1<-mwi_regions$`Area under National Administration`
+central<-mwi_regions$`Central Region`
+north<-mwi_regions$`Northern Region`
+south<-mwi_regions$`Southern Region`
+#plot(mwi_regions$`Area under National Administration`$geometry)
+
+```
+
+
+### National
+```{r}
+
+prstack<-stack("C:\\Users\\Makabe\\opennaps\\cru_ts4.05.1901.2020.pre.dat.nc")
+tstack<-stack("C:\\Users\\Makabe\\opennaps\\cru_ts4.05.1901.2020.tmp.dat.nc")
+
+pr_crop<-raster::crop(prstack, malawisf)
+pr_mask<-raster::mask(pr_crop,malawisf)
+
+
+tcrop<-raster::crop(tstack, malawisf)
+tmask<-raster::mask(tcrop, malawisf)
+
+prdf<-as.data.frame(pr_mask, xy=TRUE, na.rm=TRUE)%>%melt(id.vars=c('x','y'))
+tmpdf<-as.data.frame(tmask, xy=TRUE, na.rm=TRUE)%>%melt(id.vars=c('x', 'y'))
+
+
+Date<-substr(prdf$variable, 2,11) # extract date values from df
+prdf$Date<-Date # add date column to df
+Year<-substr(Date,1,4)
+Month<-substr(Date,6,7)
+prdf<-cbind(prdf, Year, Month)
+
+colnames(prdf)[colnames(prdf)=="value"]<-"pr"  # change column label
+
+
+tmpdf$Date<-substr(tmpdf$variable, 2,11) # extract date values from df
+tmpdf$Year<-substr(tmpdf$Date,1,4)
+tmpdf$Month<-substr(tmpdf$Date,6,7)
+#prdf<-cbind(prdf, Year, Month)
+
+colnames(tmpdf)[colnames(tmpdf)=="value"]<-"tmean"
+
+pr_monthly<-prdf%>%dplyr::filter(Year>=1991)%>% group_by(Month)%>%
+  summarise(across(contains("pr"), ~mean(pr))) 
+pr_monthly$Month<-factor(pr_monthly$Month,levels = c('07','08','09','10','11','12','01','02','03','04','05','06')) # reorder the months to start plotting from july to june
+
+
+temp_monthly<-tmpdf%>%dplyr::filter(Year>=1991)%>%group_by(Month)%>%summarise('tmean'=mean(tmean))
+temp_monthly$Month<-factor(temp_monthly$Month, levels = c('07','08','09','10','11','12','01','02','03','04','05','06'))
+
+pr_tmp<-cbind(pr_monthly,temp_monthly)
+pr_tmp<-pr_tmp[,-3]
+ 
+ty<-list(overlaying = "y",
+  side = "right",
+  title = "Temperature (°C)",
+  autotick = FALSE,
+      dtick = 5,
+  showline=T,
+  showgrid=F,
+  ticks='outside',
+ range=c(18,30)
+  )
+
+plotly::plot_ly(type= 'bar', data= pr_tmp, x= ~Month, y= ~pr, name = 'Precipitation')%>%
+  plotly::add_lines(x= ~Month, y= ~tmean, mode = 'lines+markers',name= 'Temperature', yaxis='y2')%>%
+  plotly::add_markers(x= ~Month, y= ~tmean,color='#D21919', yaxis='y2', name='',showlegend=F)%>%
+    plotly::layout(legend=list(orientation='h', y=-0.1,x=0.7), yaxis=list(title='Precipitation (mm)',showticklables=F, showline=T, standoff=20), title='Malawi \n (Mean 1991-2020)', yaxis2=ty)
+```
+
+
+Figure 3 – Monthly Climatology of Mean-Temperature & Precipitation 1991-2020 Malawi.
+
+
+### North
+```{r}
+pr_north<-raster::crop(prstack, north)%>%raster::mask(north)
+temp_north<-raster::crop(tstack, north)%>%raster::mask(north)
+
+prdf_north<-as.data.frame(pr_north, xy=TRUE, na.rm=TRUE)%>%reshape::melt(id.vars=c('x','y'))
+tmpdf_north<-as.data.frame(temp_north, xy=TRUE, na.rm=TRUE)%>%melt(id.vars=c('x', 'y'))
+
+
+prdf_north$Date<-substr(prdf_north$variable, 2,11) 
+prdf_north$Year<-substr(prdf_north$Date,1,4)
+prdf_north$Month<-substr(prdf_north$Date,6,7)
+
+colnames(prdf_north)[colnames(prdf_north)=="value"]<-"pr"
+
+
+tmpdf_north$Date<-substr(tmpdf_north$variable, 2,11) 
+tmpdf_north$Year<-substr(tmpdf_north$Date,1,4)
+tmpdf_north$Month<-substr(tmpdf_north$Date,6,7)
+
+
+colnames(tmpdf_north)[colnames(tmpdf_north)=="value"]<-"tmean"
+
+pr_monthly<-prdf_north%>%dplyr::filter(Year>=1991)%>% group_by(Month)%>%
+  summarise(across(contains("pr"), ~mean(pr))) 
+pr_monthly$Month<-factor(pr_monthly$Month,levels = c('07','08','09','10','11','12','01','02','03','04','05','06')) #
+
+
+temp_monthly<-tmpdf_north%>%dplyr::filter(Year>=1991)%>%group_by(Month)%>%summarise('tmean'=mean(tmean))
+temp_monthly$Month<-factor(temp_monthly$Month, levels = c('07','08','09','10','11','12','01','02','03','04','05','06'))
+
+pr_tmp<-cbind(pr_monthly,temp_monthly)
+pr_tmp<-pr_tmp[,-3]
+ 
+ty<-list(overlaying = "y",
+  side = "right",
+  title = "Temperature (°C)",
+  autotick = FALSE,
+      dtick = 5,
+  showline=T,
+  ticks='outside',
+  showgrid=F,
+ range=c(15,25)
+  )
+
+plotly::plot_ly(type= 'bar', data= pr_tmp, x= ~Month, y= ~pr, name = 'Precipitation')%>%
+  plotly::add_lines(x= ~Month, y= ~tmean, mode = 'lines+markers',name= 'Temperature', yaxis='y2')%>%
+  plotly::add_markers(x= ~Month, y= ~tmean,color='#D21919', yaxis='y2', name='', showlegend=F)%>%
+    plotly::layout(legend=list(orientation='h', y=-0.1,x=0.7), yaxis=list(title='Precipitation (mm)',showticklables=F, showline=T), title='Northern Malawi \n (Mean 1991-2020)', yaxis2=ty)
+
+
+```
+
+
+
+### Central
+```{r}
+pr_central<-raster::crop(prstack, central)%>%raster::mask(central)
+temp_central<-raster::crop(tstack, central)%>%raster::mask(central)
+
+prdf_central<-as.data.frame(pr_central, xy=TRUE, na.rm=TRUE)%>% 
+  melt(id.vars=c('x','y'))
+tmpdf_central<-as.data.frame(temp_central, xy=TRUE, na.rm=TRUE)%>%melt(id.vars=c('x', 'y'))
+
+
+prdf_central$Date<-substr(prdf_central$variable, 2,11) # extract date values from df
+prdf_central$Year<-substr(prdf_central$Date,1,4)
+prdf_central$Month<-substr(prdf_central$Date,6,7)
+
+colnames(prdf_central)[colnames(prdf_central)=="value"]<-"pr"
+
+tmpdf_central$Date<-substr(tmpdf_central$variable, 2,11) # extract date values from df
+tmpdf_central$Year<-substr(tmpdf_central$Date,1,4)
+tmpdf_central$Month<-substr(tmpdf_central$Date,6,7)
+
+colnames(tmpdf_central)[colnames(tmpdf_central)=="value"]<-"tmean"
+
+pr_monthly<-prdf_central%>%dplyr::filter(Year>=1991)%>% group_by(Month)%>%
+  summarise(across(contains("pr"), ~mean(pr))) 
+pr_monthly$Month<-factor(pr_monthly$Month,levels = c('07','08','09','10','11','12','01','02','03','04','05','06')) # reorder the months to start plotting from july to june
+
+
+temp_monthly<-tmpdf_central%>%dplyr::filter(Year>=1991)%>%group_by(Month)%>%summarise('tmean'=mean(tmean))
+temp_monthly$Month<-factor(temp_monthly$Month, levels = c('07','08','09','10','11','12','01','02','03','04','05','06'))
+
+pr_tmp<-cbind(pr_monthly,temp_monthly)
+pr_tmp<-pr_tmp[,-3]
+ 
+ty<-list(overlaying = "y",
+  side = "right",
+  title = "Temperature (°C)",
+  autotick = FALSE,
+      dtick = 10,
+  showline=T,
+  ticks='outside',
+  showgrid=F,
+ range=c(15,30)
+  )
+
+plotly::plot_ly(type= 'bar', data= pr_tmp, x= ~Month, y= ~pr, name = 'Precipitation')%>%
+  plotly::add_lines(x= ~Month, y= ~tmean, mode = 'lines+markers',name= 'Temperature', yaxis='y2')%>%
+  plotly::add_markers(x= ~Month, y= ~tmean,color='#D21919', yaxis='y2', name='',showlegend=F)%>%
+    plotly::layout(legend=list(orientation='h', y=-0.1,x=0.7), yaxis=list(title='Precipitation (mm)',showticklables=F,showline=T), title='Central Malawi \n (Mean 1991-2020)', yaxis2=ty)
+
+
+```
+
+
+
+### South
+```{r}
+pr_south<-raster::crop(prstack, south)%>%raster::mask(south)
+temp_south<-raster::crop(tstack, south)%>%raster::mask(south)
+
+prdf_south<-as.data.frame(pr_south, xy=TRUE, na.rm=TRUE)%>% 
+  melt(id.vars=c('x','y'))
+tmpdf_south<-as.data.frame(temp_south, xy=TRUE, na.rm=TRUE)%>%melt(id.vars=c('x', 'y'))
+
+
+prdf_south$Date<-substr(prdf_south$variable, 2,11) 
+prdf_south$Year<-substr(prdf_south$Date,1,4)
+prdf_south$Month<-substr(prdf_south$Date,6,7)
+
+colnames(prdf_south)[colnames(prdf_south)=="value"]<-"pr"
+
+
+tmpdf_south$Date<-substr(tmpdf_south$variable, 2,11) 
+tmpdf_south$Year<-substr(tmpdf_south$Date,1,4)
+tmpdf_south$Month<-substr(tmpdf_south$Date,6,7)
+
+
+colnames(tmpdf_south)[colnames(tmpdf_south)=="value"]<-"tmean"
+
+pr_monthly<-prdf_south%>%dplyr::filter(Year>=1991)%>% group_by(Month)%>%
+  summarise(across(contains("pr"), ~mean(pr))) 
+pr_monthly$Month<-factor(pr_monthly$Month,levels = c('07','08','09','10','11','12','01','02','03','04','05','06')) #
+
+
+temp_monthly<-tmpdf_south%>%dplyr::filter(Year>=1991)%>%group_by(Month)%>%summarise('tmean'=mean(tmean))
+temp_monthly$Month<-factor(temp_monthly$Month, levels = c('07','08','09','10','11','12','01','02','03','04','05','06'))
+
+pr_tmp<-cbind(pr_monthly,temp_monthly)
+pr_tmp<-pr_tmp[,-3]
+ 
+ty<-list(overlaying = "y",
+  side = "right",
+  title = "Temperature (°C)",
+  autotick = FALSE,
+      dtick = 10,
+  showline=T,
+  ticks='outside',
+  showgrid=F,
+ range=c(19,30)
+  )
+
+plotly::plot_ly(type= 'bar', data= pr_tmp, x= ~Month, y= ~pr, name = 'Precipitation')%>%
+  plotly::add_lines(x= ~Month, y= ~tmean, mode = 'lines+markers',name= 'Temperature', yaxis='y2')%>%
+  plotly::add_markers(x= ~Month, y= ~tmean,color='#D21919', yaxis='y2', name='',showlegend=F)%>%
+    plotly::layout(legend=list(orientation='h', y=-0.1,x=0.7), yaxis=list(title='Precipitation (mm)',showticklables=F, showline=T), title='Southern Malawi \n (Mean 1991-2020)', yaxis2=ty)
+
+
+
+```
+
+
+### Temperature and Precipitation Anomalies in Malawi from 1950 to present (based on climatological period 1981-2010)
+
+#### Temperature Anomaly
+
+```{r, eval=FALSE}
+
+# mean temp 1901-2019
+TEMP <- read.table("CRU.CY.4.04.TMP_MWI.txt", header=TRUE, quote="\"", stringsAsFactors=TRUE)
+
+mtemp<-TEMP[,c(-1,-14,-15,-16,-17,-18)]
+anntemp<-TEMP[,c(1,18)]
+
+# base 1961-1990
+base81<-subset(anntemp, YEAR>1960)%>%subset( YEAR<1991)
+
+meanbase<-sum(base81$ANN)/30
+  
+anntemp$anomaly<-anntemp$ANN-meanbase
+
+anntemp$pos<-anntemp$anomaly >=0
+
+#anntemp%>%dplyr::filter(YEAR>1950)%>%
+#ggplot()+
+ # geom_col(aes(x = YEAR, y = anomaly, fill = pos),position = "identity", colour = "white", size = 0.01) +
+  #labs(x='Year', y= 'Anomaly (°C)')+
+  #ggtitle('MalawiTemperature Anomaly \n(Base: 1961-1990)')+
+  #scale_fill_manual(values = c('blue', 'red'), guide = 'none')
+
+
+anntemp%>%dplyr::filter(YEAR>1950)%>%
+  plot_ly(x=~YEAR, y=~anomaly, colors = c('blue', 'red'),color = ~pos, type = 'bar', showlegend=F)%>%
+  layout(title=list(text='Malawi Temperature Anomaly  \n (Base=1961-1990)', font=list(size=20)), yaxis=list(title='Anomaly (°C)',standoff=15, showline=T), xaxis=list(ticks='inside', showline=T))
+
+```
+
+```{r}
+# mean temp 1901-2019
+TEMP <- read.table("CRU.CY.4.04.TMP_MWI.txt",header=TRUE, quote="\"", stringsAsFactors=TRUE)
+
+mtemp<-TEMP[,c(-1,-14,-15,-16,-17,-18)]
+anntemp<-TEMP[,c(1,18)]
+
+# base 1981-2010
+base81<-subset(anntemp, YEAR>1980)%>%subset( YEAR<2011)
+
+meanbase<-sum(base81$ANN)/30
+  
+anntemp$anomaly<-anntemp$ANN-meanbase
+
+anntemp$pos<-anntemp$anomaly >=0
+
+#anntemp%>%dplyr::filter(YEAR>1950)%>%
+#ggplot()+
+ # geom_col(aes(x = YEAR, y = anomaly, fill = pos),position = "identity", colour = "white", size = 0.01) + ggtitle('Malawi Temperature Anomaly \n(Base: #1981-2010)')+
+ # labs(x='Year', y= 'Anomaly (°C)')+
+  #scale_fill_manual(values = c('blue', 'red'), guide = "none")
+
+anntemp%>%dplyr::filter(YEAR>1950)%>%
+  plot_ly(x=~YEAR, y=~anomaly, colors = c('blue', 'red'),color = ~pos, type = 'bar', showlegend=F)%>%
+  layout(title=list(text='Malawi Temperature Anomaly  \n (Base=1981-2010)', font=list(size=20)), yaxis=list(title='Anomaly (°C)',standoff=15, showline=T), xaxis=list(ticks='inside', showline=T))
+
+
+```
+
+#### Precipitation Anomaly
+
+```{r, eval=FALSE}
+
+# mean pr 1901-2019
+pr <- read.table("CRU.CY.4.04.PRE_MWI.txt", header=TRUE, quote="\"", stringsAsFactors=TRUE)
+
+mpr<-pr[,c(-1,-14,-15,-16,-17,-18)]
+annpr<-pr[,c(1,18)]
+
+# base 1961-1990
+base81<-subset(annpr, YEAR>1960)%>%subset( YEAR<1991)
+
+meanbase<-sum(base81$ANN)/30
+  
+annpr$anomaly<-annpr$ANN-meanbase
+
+annpr$pos<-annpr$anomaly >=0
+
+#annpr%>%dplyr::filter(YEAR>1950)%>%
+#ggplot()+
+  #geom_col(aes(x = YEAR, y = anomaly, fill = pos),position = "identity", colour = "white", size = 0.01) +
+  #labs(x='Year', y= 'Anomaly (mm)')+
+  #ggtitle('Malawi Precipitation Anomaly\n(Base: 1961-1990)')+
+  #scale_fill_manual(values = c('red', 'blue'), guide = 'none')
+
+
+annpr%>%dplyr::filter(YEAR>1950)%>%
+  plot_ly(x=~YEAR, y=~anomaly, colors = c('red', 'blue'),color = ~pos, type = 'bar', showlegend=F)%>%
+  layout(title=list(text='Malawi Precipitation Anomaly\n(Base: 1961-1990)', font=list(size=20)), yaxis=list(title='Anomaly (mm)',standoff=15, showline=T), xaxis=list(ticks='inside', showline=T))
+
+```
+
+```{r}
+
+# mean pr 1901-2019
+pr <- read.table("CRU.CY.4.04.PRE_MWI.txt", header=TRUE, quote="\"", stringsAsFactors=TRUE)
+
+mpr<-pr[,c(-1,-14,-15,-16,-17,-18)]
+annpr<-pr[,c(1,18)]
+
+# base 1981-2010
+base81<-subset(annpr, YEAR>1980)%>%subset( YEAR<2011)
+
+meanbase<-sum(base81$ANN)/30
+  
+annpr$anomaly<-annpr$ANN-meanbase
+
+annpr$pos<-annpr$anomaly >=0
+
+#annpr%>%dplyr::filter(YEAR>1950)%>%
+#ggplot()+
+ # geom_col(aes(x = YEAR, y = anomaly, fill = pos),position = "identity", colour = "white", size = 0.01) + ggtitle('Malawi Precipitation Anomaly         #          \n(Base: 1981-2010)')+
+  #labs(x='Year', y= 'Anomaly (mm)')+
+  #scale_fill_manual(values = c('red', 'blue'), guide = "none")
+
+annpr%>%dplyr::filter(YEAR>1950)%>%
+  plot_ly(x=~YEAR, y=~anomaly, colors = c('red', 'blue'),color = ~pos, type = 'bar', showlegend=F)%>%
+  layout(title=list(text='Malawi Precipitation Anomaly\n(Base: 1981-2010)', font=list(size=20)), yaxis=list(title='Anomaly (mm)',standoff=15, showline=T), xaxis=list(ticks='inside', showline=T))
+
+```
+
+
+
+## Climate Projections -  based on SSPs
+
+### Mean Temperature change 2021-2040 based on climatological mean 1971-2000
+
+```{r, include=FALSE, cache=TRUE}
+wc.tmin<-getData("worldclim", var='tmin', res=2.5)
+wc.tmax<-getData("worldclim", var='tmax', res=2.5)
+wc.tmean<-(wc.tmin+wc.tmax)/2
+gain(wc.tmean)<-0.1
+
+mwi.tmean<-crop(wc.tmean,malawisf)%>%raster::mask(malawisf)
+basemn<-mean(mwi.tmean)
+#plot(basenorth)
+
+#admin1
+north.tmean<-raster::crop(wc.tmean,north)%>%raster::mask(north)
+basenorth<-mean(north.tmean)
+
+central.tmean<-raster::crop(wc.tmean,central)%>%raster::mask(central)
+basecentral<-mean(central.tmean)
+
+south.tmean<-raster::crop(wc.tmean,south)%>%raster::mask(south)
+basesouth<-mean(south.tmean)
+
+area1.tmean<-raster::crop(wc.tmean,area1)%>%raster::mask(area1)
+basearea1<-mean(area1.tmean)
+```
+
+                                      National
+                                      
+                        Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn126.40<-(tn126.40+tx126.40)/2
+tvar126<-tmn126.40-basemn
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+
+                                Scenario: SSP2 - Middle of the Road
+                                
+```{r}
+# 245
+tn245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn245.40<-(tn245.40+tx245.40)/2
+#plot(tmn245.40)
+tvar245<-tmn245.40-basemn
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                                Scenario: SSP3 - Regional Rivalry
+
+```{r}
+# 370
+tn370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn370.40<-(tn370.40+tx370.40)/2
+#plot(tmn370.40)
+tvar370<-tmn370.40-basemn
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                              Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+#585
+tn585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn585.40<-(tn585.40+tx585.40)/2
+#plot(tmn585.40)
+tvar585<-tmn585.40-basemn
+names(tvar585)<-month.name
+
+
+plot(tvar585, sub=paste0(names(tvar585)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), line = 0.5, las=1), col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T, lwd=0.001)
+```
+
+
+                                      Northern Malawi
+                                        
+                             Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn126.40<-(tn126.40+tx126.40)/2
+#plot(tmn126.40)
+tvar126<-tmn126.40-basenorth
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+
+                            Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+tn245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn245.40<-(tn245.40+tx245.40)/2
+#plot(tmn245.40)
+tvar245<-tmn245.40-basenorth
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                            Scenario: SSP3 - Regional Rivalry
+                               
+```{r}
+# 370
+tn370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn370.40<-(tn370.40+tx370.40)/2
+#plot(tmn370.40)
+tvar370<-tmn370.40-basenorth
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+
+                          Scenario: SSP5 - Fossil-fueled Development
+                             
+```{r}
+#585
+tn585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn585.40<-(tn585.40+tx585.40)/2
+#plot(tmn585.40)
+tvar585<-tmn585.40-basenorth
+names(tvar585)<-month.name
+
+plot(tvar585, sub= paste(names(tvar585)), legend.only=FALSE, horizontal = FALSE,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 1),col=heat.colors(10, rev = T))
+  plot(malawisf$geometry, add=T)
+```
+
+
+                                        Central Malawi
+                                        
+                             Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn126.40<-(tn126.40+tx126.40)/2
+#plot(tmn126.40)
+tvar126<-tmn126.40-basecentral
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                          Scenario: SSP2 - Middle of the Road
+
+```{r}
+# 245
+tn245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn245.40<-(tn245.40+tx245.40)/2
+#plot(tmn245.40)
+tvar245<-tmn245.40-basecentral
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP3 - Regional Rivalry
+
+```{r}
+# 370
+tn370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn370.40<-(tn370.40+tx370.40)/2
+#plot(tmn370.40)
+tvar370<-tmn370.40-basecentral
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+#585
+tn585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn585.40<-(tn585.40+tx585.40)/2
+#plot(tmn585.40)
+tvar585<-tmn585.40-basecentral
+names(tvar585)<-month.name
+
+plot(tvar585, sub=paste(names(tvar585)),legend.only=FALSE, horizontal = FALSE,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T, lwd=0.001)
+
+```
+
+
+
+                                        Southern Malawi
+                                        
+                             Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn126.40<-(tn126.40+tx126.40)/2
+#plot(tmn126.40)
+tvar126<-tmn126.40-basesouth
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                          Scenario: SSP2 - Middle of the Road
+
+```{r}
+# 245
+tn245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn245.40<-(tn245.40+tx245.40)/2
+#plot(tmn245.40)
+tvar245<-tmn245.40-basesouth
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP3 - Regional Rivalry
+
+```{r}
+# 370
+tn370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn370.40<-(tn370.40+tx370.40)/2
+#plot(tmn370.40)
+tvar370<-tmn370.40-basesouth
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+#585
+tn585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn585.40<-(tn585.40+tx585.40)/2
+#plot(tmn585.40)
+tvar585<-tmn585.40-basesouth
+names(tvar585)<-month.name
+
+plot(tvar585, sub=paste(names(tvar585)),legend.only=FALSE, horizontal = FALSE,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T, lwd=0.001)
+
+```
+
+
+### Precipitation change 2021-2040 based on climatologial period 1971-2000
+
+```{r, include=FALSE}
+wc.prec<-getData("worldclim", var='prec', res=2.5)
+mwi.prec<-crop(wc.prec,malawisf)%>%raster::mask(malawisf)
+pr.basemn<-mean(mwi.prec)
+#plot(basemn)
+#baseglob<-mean(wc.prec)
+
+#admin1
+north.pr<-raster::crop(wc.prec,north)%>%raster::mask(north)
+pr.basenorth<-mean(north.pr)
+
+central.pr<-raster::crop(wc.prec,central)%>%raster::mask(central)
+pr.basecentral<-mean(central.pr)
+
+south.pr<-raster::crop(wc.prec,south)%>%raster::mask(south)
+pr.basesouth<-mean(south.pr)
+
+```
+
+                                          National
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+
+# 126
+pr126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr126.40)
+prvar126<-pr126.40-pr.basemn
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(malawisf$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr245.40)
+prvar245<-pr245.40-pr.basemn
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(malawisf$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr370.40)
+prvar370<-pr370.40-pr.basemn
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(malawisf$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr585.40)
+prvar585<-pr585.40-pr.basemn
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(malawisf$geometry, add=T)
+
+```
+
+
+                                         Nothern Malawi
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+
+# 126
+pr126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr126.40)
+prvar126<-pr126.40-pr.basenorth
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(north$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr245.40)
+prvar245<-pr245.40-pr.basenorth
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(north$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr370.40)
+prvar370<-pr370.40-pr.basenorth
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(north$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr585.40)
+prvar585<-pr585.40-pr.basenorth
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(north$geometry, add=T)
+
+```
+
+
+                                         Central Malawi
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+# 126
+pr126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr126.40)
+prvar126<-pr126.40-pr.basecentral
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(central$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr245.40)
+prvar245<-pr245.40-pr.basecentral
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(central$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr370.40)
+prvar370<-pr370.40-pr.basecentral
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(central$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr585.40)
+prvar585<-pr585.40-pr.basecentral
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(central$geometry, add=T)
+
+```
+
+                                         Southern Malawi
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+# 126
+pr126.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr126.40)
+prvar126<-pr126.40-pr.basesouth
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(south$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr245.40)
+prvar245<-pr245.40-pr.basesouth
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(south$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr370.40)
+prvar370<-pr370.40-pr.basesouth
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(south$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr585.40)
+prvar585<-pr585.40-pr.basesouth
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(south$geometry, add=T)
+
+```
+
+### Mean Temperature change 2041-2060 based on climatological mean 1971-2000
+
+
+                                   National
+                                      
+                        Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn126.60<-(tn126.60+tx126.60)/2
+tvar126<-tmn126.60-basemn
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+
+                                Scenario: SSP2 - Middle of the Road
+                                
+```{r}
+# 245
+tn245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn245.60<-(tn245.60+tx245.60)/2
+#plot(tmn245.60)
+tvar245<-tmn245.60-basemn
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                                Scenario: SSP3 - Regional Rivalry
+
+```{r}
+# 370
+tn370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn370.60<-(tn370.60+tx370.60)/2
+#plot(tmn370.60)
+tvar370<-tmn370.60-basemn
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                              Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+#585
+tn585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tx585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+tmn585.60<-(tn585.60+tx585.60)/2
+#plot(tmn585.60)
+tvar585<-tmn585.60-basemn
+names(tvar585)<-month.name
+
+
+plot(tvar585, sub=paste0(names(tvar585)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), line = 0.5, las=1), col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T, lwd=0.001)
+```
+
+
+                                      Northern Malawi
+                                        
+                             Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn126.60<-(tn126.60+tx126.60)/2
+#plot(tmn126.60)
+tvar126<-tmn126.60-basenorth
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+
+                            Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+tn245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn245.60<-(tn245.60+tx245.60)/2
+#plot(tmn245.60)
+tvar245<-tmn245.60-basenorth
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                            Scenario: SSP3 - Regional Rivalry
+                               
+```{r}
+# 370
+tn370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn370.60<-(tn370.60+tx370.60)/2
+#plot(tmn370.60)
+tvar370<-tmn370.60-basenorth
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+
+                          Scenario: SSP5 - Fossil-fueled Development
+                             
+```{r}
+#585
+tn585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tx585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+tmn585.60<-(tn585.60+tx585.60)/2
+#plot(tmn585.60)
+tvar585<-tmn585.60-basenorth
+names(tvar585)<-month.name
+
+plot(tvar585, sub= paste(names(tvar585)), legend.only=FALSE, horizontal = FALSE,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 1),col=heat.colors(10, rev = T))
+  plot(malawisf$geometry, add=T)
+```
+
+
+                                        Central Malawi
+                                        
+                             Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn126.60<-(tn126.60+tx126.60)/2
+#plot(tmn126.60)
+tvar126<-tmn126.60-basecentral
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                          Scenario: SSP2 - Middle of the Road
+
+```{r}
+# 245
+tn245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn245.60<-(tn245.60+tx245.60)/2
+#plot(tmn245.60)
+tvar245<-tmn245.60-basecentral
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP3 - Regional Rivalry
+
+```{r}
+# 370
+tn370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn370.60<-(tn370.60+tx370.60)/2
+#plot(tmn370.60)
+tvar370<-tmn370.60-basecentral
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+#585
+tn585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tx585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+tmn585.60<-(tn585.60+tx585.60)/2
+#plot(tmn585.60)
+tvar585<-tmn585.60-basecentral
+names(tvar585)<-month.name
+
+plot(tvar585, sub=paste(names(tvar585)),legend.only=FALSE, horizontal = FALSE,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T, lwd=0.001)
+
+```
+
+
+
+                                        Southern Malawi
+                                        
+                             Scenario: SSP1 - Sustainability
+```{r}
+# 126
+tn126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin126/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax126/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn126.60<-(tn126.60+tx126.60)/2
+#plot(tmn126.60)
+tvar126<-tmn126.60-basesouth
+names(tvar126)<-month.name
+
+plot(tvar126, sub=paste0(names(tvar126)),legend.only=FALSE, horizontal = F,legend.args =list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+
+```
+
+                          Scenario: SSP2 - Middle of the Road
+
+```{r}
+# 245
+tn245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin245/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax245/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn245.60<-(tn245.60+tx245.60)/2
+#plot(tmn245.60)
+tvar245<-tmn245.60-basesouth
+names(tvar245)<-month.name
+
+plot(tvar245, sub=paste0(names(tvar245)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP3 - Regional Rivalry
+
+```{r}
+# 370
+tn370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin370/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx370.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax370/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp370_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn370.40<-(tn370.40+tx370.40)/2
+#plot(tmn370.40)
+tvar370<-tmn370.40-basesouth
+names(tvar370)<-month.name
+
+plot(tvar370, sub=paste0(names(tvar370)),legend.only=FALSE, horizontal = F,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 0.5, las=1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T,lwd=0.001)
+```
+
+                          Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+#585
+tn585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmin585/wc2.1_2.5m_tmin_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tx585.40<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/tmax585/wc2.1_2.5m_tmax_BCC-CSM2-MR_ssp585_2021-2040.tif")%>%raster::crop(south)%>%raster::mask(south)
+tmn585.40<-(tn585.40+tx585.40)/2
+#plot(tmn585.40)
+tvar585<-tmn585.40-basesouth
+names(tvar585)<-month.name
+
+plot(tvar585, sub=paste(names(tvar585)),legend.only=FALSE, horizontal = FALSE,legend.args = list(text=expression('  '*degree*C*''), side = 3, line = 1),col=heat.colors(10, rev = T))
+plot(malawisf$geometry, add=T, lwd=0.001)
+
+```
+
+
+### Precipitation change 2041-2060 based on climatologial period 1971-2000
+
+
+```{r, include=FALSE}
+wc.prec<-getData("worldclim", var='prec', res=2.5)
+mwi.prec<-crop(wc.prec,malawisf)%>%raster::mask(malawisf)
+pr.basemn<-mean(mwi.prec)
+#plot(basemn)
+#baseglob<-mean(wc.prec)
+
+#admin1
+north.pr<-raster::crop(wc.prec,north)%>%raster::mask(north)
+pr.basenorth<-mean(north.pr)
+
+central.pr<-raster::crop(wc.prec,central)%>%raster::mask(central)
+pr.basecentral<-mean(central.pr)
+
+south.pr<-raster::crop(wc.prec,south)%>%raster::mask(south)
+pr.basesouth<-mean(south.pr)
+
+```
+
+                                          National
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+# 126
+pr126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr126.60)
+prvar126<-pr126.60-pr.basemn
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(malawisf$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr245.60)
+prvar245<-pr245.60-pr.basemn
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(malawisf$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr370.60)
+prvar370<-pr370.60-pr.basemn
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(malawisf$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(malawisf)%>%raster::mask(malawisf)
+#plot(pr585.60)
+prvar585<-pr585.60-pr.basemn
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(malawisf$geometry, add=T)
+
+```
+
+
+                                         Nothern Malawi
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+# 126
+pr126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr126.60)
+prvar126<-pr126.60-pr.basenorth
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(north$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr245.60)
+prvar245<-pr245.60-pr.basenorth
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(north$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr370.60)
+prvar370<-pr370.60-pr.basenorth
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(north$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(north)%>%raster::mask(north)
+#plot(pr585.60)
+prvar585<-pr585.60-pr.basenorth
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(north$geometry, add=T)
+
+```
+
+
+                                         Central Malawi
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+# 126
+pr126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr126.60)
+prvar126<-pr126.60-pr.basecentral
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(central$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr245.60)
+prvar245<-pr245.60-pr.basecentral
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(central$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr370.60)
+prvar370<-pr370.60-pr.basecentral
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(central$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(central)%>%raster::mask(central)
+#plot(pr585.60)
+prvar585<-pr585.60-pr.basecentral
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(central$geometry, add=T)
+
+```
+
+                                         Southern Malawi
+                                        
+                            Scenario: SSP1 - Sustainability
+```{r}
+# 126
+pr126.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr126/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp126_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr126.60)
+prvar126<-pr126.60-pr.basesouth
+names(prvar126)<-month.name
+
+plot(prvar126,sub=paste(names(prvar126)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(south$geometry, add=T)
+
+```
+
+                           Scenario: SSP2 - Middle of the Road
+```{r}
+# 245
+pr245.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr245/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp245_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr245.60)
+prvar245<-pr245.60-pr.basesouth
+names(prvar245)<-month.name
+
+plot(prvar245,sub=paste(names(prvar245)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(south$geometry, add=T)
+```
+
+                           Scenario: SSP3 - Regional Rivarly
+
+```{r}
+# 370
+pr370.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr370/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp370_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr370.60)
+prvar370<-pr370.60-pr.basesouth
+names(prvar370)<-month.name
+
+plot(prvar370, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='      mm', side = 3, line = 1),main='SSP3 - Regional Rivalry',sub=paste(names(prvar370)))
+plot(south$geometry, add=T)
+```
+
+                           Scenario: SSP5 - Fossil-fueled Development
+
+```{r}
+# 585
+pr585.60<-stack("C:/Users/Makabe/opennaps/WC_Fut_data/pr585/wc2.1_2.5m_prec_BCC-CSM2-MR_ssp585_2041-2060.tif")%>%raster::crop(south)%>%raster::mask(south)
+#plot(pr585.60)
+prvar585<-pr585.60-pr.basesouth
+names(prvar585)<-month.name
+
+plot(prvar585,sub=paste(names(prvar585)), legend=T, legend.only=FALSE, horizontal = FALSE,legend.args = list(text='     mm', side =3.9, line = 1))
+plot(south$geometry, add=T)
+
+```
+
+
+```{r, eval=FALSE}
+bookdown::render_book()
+```
+
+```{r eval=FALSE}
+bookdown::serve_book()
+```
+
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```
